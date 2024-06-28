@@ -1,7 +1,6 @@
 #include <gtest/gtest.h>
 #include "timsort.h"
 
-
 // Test suite for merge_lo
 class MergeLoTest : public ::testing::Test {
 protected:
@@ -27,9 +26,11 @@ TEST_F(MergeLoTest, BasicMerge) {
 
     merge_lo(arr, 0, 3, 3, 3);
 
+    std::cout << "\033[33m"; // Set color to yellow
     std::cout << "Array after merge_lo: ";
     for (int num : arr) std::cout << num << " ";
     std::cout << std::endl;
+    std::cout << "\033[0m";  // Reset color
 
     EXPECT_EQ(arr, (std::vector<int>{1, 2, 3, 4, 5, 6}));
 }
@@ -42,9 +43,11 @@ TEST_F(MergeLoTest, UnequalSizes) {
 
     merge_lo(arr, 0, 3, 3, 4);
 
+    std::cout << "\033[33m"; // Set color to yellow
     std::cout << "Array after merge_lo: ";
     for (int num : arr) std::cout << num << " ";
     std::cout << std::endl;
+    std::cout << "\033[0m";  // Reset color
 
     EXPECT_EQ(arr, (std::vector<int>{1, 2, 3, 4, 6, 7, 8}));
 }
@@ -57,9 +60,11 @@ TEST_F(MergeLoTest, SingleElement) {
 
     merge_lo(arr, 0, 1, 1, 1);
 
+    std::cout << "\033[33m"; // Set color to yellow
     std::cout << "Array after merge_lo: ";
     for (int num : arr) std::cout << num << " ";
     std::cout << std::endl;
+    std::cout << "\033[0m";  // Reset color
 
     EXPECT_EQ(arr, (std::vector<int>{1, 5}));
 }
@@ -72,9 +77,11 @@ TEST_F(MergeLoTest, AllElementsInOneSubarray) {
 
     merge_lo(arr, 0, 3, 3, 3);
 
+    std::cout << "\033[33m"; // Set color to yellow
     std::cout << "Array after merge_lo: ";
     for (int num : arr) std::cout << num << " ";
     std::cout << std::endl;
+    std::cout << "\033[0m";  // Reset color
 
     EXPECT_EQ(arr, (std::vector<int>{1, 2, 3, 4, 5, 6}));
 }
@@ -87,9 +94,11 @@ TEST_F(MergeLoTest, AlreadyMerged) {
 
     merge_lo(arr, 0, 3, 3, 3);
 
+    std::cout << "\033[33m"; // Set color to yellow
     std::cout << "Array after merge_lo: ";
     for (int num : arr) std::cout << num << " ";
     std::cout << std::endl;
+    std::cout << "\033[0m";  // Reset color
 
     EXPECT_EQ(arr, (std::vector<int>{1, 2, 3, 4, 5, 6}));
 }
@@ -102,9 +111,11 @@ TEST_F(MergeLoTest, EmptySubarrays) {
 
     merge_lo(arr, 0, 0, 3, 3);
 
+    std::cout << "\033[33m"; // Set color to yellow
     std::cout << "Array after merge_lo: ";
     for (int num : arr) std::cout << num << " ";
     std::cout << std::endl;
+    std::cout << "\033[0m";  // Reset color
 
     EXPECT_EQ(arr, (std::vector<int>{1, 2, 3, 4, 5, 6}));
 }
@@ -113,5 +124,4 @@ TEST_F(MergeLoTest, OutOfBounds) {
     std::vector<int> arr = {1, 2, 3, 4, 5, 6};
     EXPECT_THROW(merge_lo(arr, 0, 4, 3, 3), std::out_of_range);
 }
-
 

@@ -1,5 +1,5 @@
 #include "timsort.h"
-
+#include <stdexcept> // For std::out_of_range
 
 
 // Function to reverse a range in the vector inplace
@@ -13,7 +13,7 @@ void reverse_range(std::vector<int>& arr, size_t start, size_t end) {
 
 
 //Function to count the length of the next run in the array and save run information
-size_t count_run(std::vector<int>& arr, size_t minrun, size_t run_start, run_stack& stack) {
+size_t count_run(std::vector<int>& arr, size_t minrun, size_t &run_start, run_stack& stack) {
     size_t array_size = arr.size();
 
     if (run_start >= array_size - 1) return array_size - run_start; // If at the end, return the remaining length
@@ -33,6 +33,11 @@ size_t count_run(std::vector<int>& arr, size_t minrun, size_t run_start, run_sta
             while (temp_array.size() < minrun && run_end < array_size) {
                 int location = binarySearch(temp_array, arr[run_end], 0, temp_array.size() - 1);
                 temp_array.insert(temp_array.begin() + location, arr[run_end]);
+                ++run_end;
+            }
+
+            while (run_end < array_size && arr[run_end] >= arr[run_end - 1]) {
+                temp_array.push_back(arr[run_end]);
                 ++run_end;
             }
 
@@ -56,6 +61,11 @@ size_t count_run(std::vector<int>& arr, size_t minrun, size_t run_start, run_sta
                 ++run_end;
             }
 
+            while (run_end < array_size && arr[run_end] >= arr[run_end - 1]) {
+                temp_array.push_back(arr[run_end]);
+                ++run_end;
+            }
+
             std::copy(temp_array.begin(), temp_array.end(), arr.begin() + run_start);
         }
     }
@@ -73,16 +83,17 @@ size_t count_run(std::vector<int>& arr, size_t minrun, size_t run_start, run_sta
 
 
 
-//this is not a readable function and a more readable function shall be introduced
-// Function to compute minrun based on the size of the array
+
+
 size_t compute_minrun(size_t n) {
-    size_t r = 0;
+    size_t r = 0; // Becomes 1 if any 1 bits are shifted off
     while (n >= 64) {
-        r |= n & 1;
-        n >>= 1; // divides the size by 2
+        r |= (n & 1);
+        n >>= 1;
     }
     return n + r;
 }
+
 
 
 
@@ -97,7 +108,8 @@ std::pair<size_t, size_t> merge_at(std::vector<int>&array, std::pair<size_t, siz
 
     if (len1 <= len2) {
         merge_lo(array, start1, len1, start2, len2);
-    } else {
+    }
+    else {
         merge_hi(array, start1, len1, start2, len2);
     }
 
@@ -106,7 +118,20 @@ std::pair<size_t, size_t> merge_at(std::vector<int>&array, std::pair<size_t, siz
 
 
 
+
+
 void merge_lo(std::vector<int>& arr, size_t start1, size_t len1, size_t start2, size_t len2) {
+    // Check for out-of-bounds access
+    if (start1 + len1 > arr.size() || start2 + len2 > arr.size()) {
+        throw std::out_of_range("merge_lo: Index out of bounds");
+    }
+
+    // Handle the case where the first subarray is empty
+    if (len1 == 0) return;
+
+    // Handle the case where the second subarray is empty
+    if (len2 == 0) return;
+
     std::vector<int> temp(arr.begin() + start1, arr.begin() + start1 + len1);
     size_t i = 0; // Index for temp
     size_t j = start2; // Index for arr[start2]
@@ -129,13 +154,21 @@ void merge_lo(std::vector<int>& arr, size_t start1, size_t len1, size_t start2, 
     while (j < start2 + len2) {
         arr[k++] = arr[j++];
     }
-
 }
 
 
 
 
+
+
 void merge_hi(std::vector<int>& arr, size_t start1, size_t len1, size_t start2, size_t len2) {
+    // Handle the case where the first subarray is empty
+    if (len1 == 0) return;
+
+    // Handle the case where the second subarray is empty
+    if (len2 == 0) return;
+
+
     std::vector<int> temp(arr.begin() + start2, arr.begin() + start2 + len2);
     size_t i = start1 + len1 - 1; // Index for arr[start1 + len1 - 1]
     size_t j = len2 - 1; // Index for temp
@@ -169,54 +202,54 @@ void merge_hi(std::vector<int>& arr, size_t start1, size_t len1, size_t start2, 
 
 void merge_collapse(std::vector<int>& arr, run_stack& stack) {
     // Ensure the stack has at least 2 runs to merge
+
+    // top -> C
+    // middle -> B
+    // bottom -> A
+
     while (stack.size() > 1) {
-        auto top1 = stack.top();
+        auto top = stack.top(); // C
         stack.pop();
-        auto top2 = stack.top();
+        auto middle = stack.top(); // B
         stack.pop();
 
         // If the stack still has more elements, we need to check the third most recent run
         if (!stack.empty()) {
-            auto top3 = stack.top();
-            stack.push(top2);
-            stack.push(top1);
+            auto bottom = stack.top(); // A
+            stack.push(middle);
+            stack.push(top);
 
             // Check if the third run's length is less than or equal to the sum of the two most recent runs
-            if (top3.second <= top2.second + top1.second) {
-                if (top1.second < top3.second) {
-                    // Ensure only top1 is left, the merge_at will return the new merged run size
+            if (bottom.second <= middle.second + top.second) {
+                // Check if the run length combination violates the second invariant
+                if (top.second + middle.second <= bottom.second) {
                     stack.pop();
                     stack.pop();
-
-                    // Merge top2 and top3
-                    auto new_run = merge_at(arr,top2, top3); // This should return the new merged run size
+                    auto new_run = merge_at(arr, middle, top); // Merge middle (B) and top (C)
                     stack.push(new_run);
                 } else {
-                    // Remove all 3
                     stack.pop();
                     stack.pop();
                     stack.pop();
-
-                    // Merge top1 and top2
-                    auto new_run = merge_at(arr,top1, top2); // Merge top1 and top2
+                    auto new_run = merge_at(arr, bottom, middle); // Merge bottom (A) and middle (B)
                     stack.push(new_run);
-                    stack.push(top3);
+                    stack.push(top); // Push top (C) back on the stack
                 }
             } else {
-                // Just put them back, no need for customizations
-                stack.push(top2);
-                stack.push(top1);
+                // No merging needed; restore the stack
+                stack.push(middle);
+                stack.push(top);
                 break;
             }
         } else {
-            stack.push(top2);
-            stack.push(top1);
+            stack.push(middle);
+            stack.push(top);
 
-            if (top2.second <= top1.second) {
-                // Remove both stacks and return new stack size
+            if (middle.second <= top.second) {
+                // Remove both stacks and merge
                 stack.pop();
                 stack.pop();
-                auto new_run = merge_at(arr,top1, top2);
+                auto new_run = merge_at(arr, middle, top);
                 stack.push(new_run);
             } else {
                 break;
@@ -224,6 +257,7 @@ void merge_collapse(std::vector<int>& arr, run_stack& stack) {
         }
     }
 }
+
 
 
 // An iterative binary search function to find the position to insert x
@@ -283,7 +317,7 @@ std::vector<int> generate_random_data(size_t size) {
     std::vector<int> data(size);
     std::random_device rd;
     std::mt19937 gen(rd());
-    std::uniform_int_distribution<> dis(1, 1000000);
+    std::uniform_int_distribution<> dis(1, 300);
 
     for (size_t i = 0; i < size; ++i) {
         data[i] = dis(gen);

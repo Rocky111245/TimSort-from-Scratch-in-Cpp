@@ -3,6 +3,10 @@ project(TimSort_from_Scratch_in_Cpp)
 
 set(CMAKE_CXX_STANDARD 23)
 
+# Enable Debug mode
+set(CMAKE_BUILD_TYPE Debug)
+set(CMAKE_CXX_FLAGS_DEBUG "-g")
+
 # Include the FetchContent module
 include(FetchContent)
 

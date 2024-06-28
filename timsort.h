@@ -17,7 +17,7 @@ const int MIN_GALLOP = 7;
 typedef std::stack<std::pair<size_t, size_t>> run_stack;
 
 void reverse_range(std::vector<int>& arr, size_t start, size_t end);
-size_t count_run(std::vector<int>& arr, size_t minrun, size_t run_start, run_stack& stack);
+size_t count_run(std::vector<int>& arr, size_t minrun, size_t &run_start, run_stack& stack) ;
 size_t compute_minrun(size_t n);
 int binarySearch(std::vector<int>& arr, int x, int low, int high);
 void binary_insertion_sort(std::vector<int>& arr, int key, int location);
