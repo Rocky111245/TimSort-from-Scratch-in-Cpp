@@ -101,10 +101,10 @@ size_t compute_minrun(size_t n) {
 //Function to merge two runs and return the new merged run
 std::pair<size_t, size_t> merge_at(std::vector<int>&array, std::pair<size_t, size_t> run1, std::pair<size_t, size_t> run2) {
     // Assuming merge_lo and merge_hi functions are implemented and used here
-    size_t start1 = run1.first;
-    size_t len1 = run1.second;
-    size_t start2 = run2.first;
-    size_t len2 = run2.second;
+    int start1 = run1.first;
+    int len1 = run1.second;
+    int start2 = run2.first;
+    int len2 = run2.second;
 
     if (len1 <= len2) {
         merge_lo(array, start1, len1, start2, len2);
@@ -120,7 +120,7 @@ std::pair<size_t, size_t> merge_at(std::vector<int>&array, std::pair<size_t, siz
 
 
 
-void merge_lo(std::vector<int>& arr, size_t start1, size_t len1, size_t start2, size_t len2) {
+void merge_lo(std::vector<int>& arr, int start1, int len1, int start2, int len2) {
     // Check for out-of-bounds access
     if (start1 + len1 > arr.size() || start2 + len2 > arr.size()) {
         throw std::out_of_range("merge_lo: Index out of bounds");
@@ -133,9 +133,9 @@ void merge_lo(std::vector<int>& arr, size_t start1, size_t len1, size_t start2, 
     if (len2 == 0) return;
 
     std::vector<int> temp(arr.begin() + start1, arr.begin() + start1 + len1);
-    size_t i = 0; // Index for temp
-    size_t j = start2; // Index for arr[start2]
-    size_t k = start1; // Index for merged array position
+    int i = 0; // Index for temp
+    int j = start2; // Index for arr[start2]
+    int k = start1; // Index for merged array position
 
     while (i < len1 && j < start2 + len2) {
         if (temp[i] <= arr[j]) {
@@ -158,46 +158,43 @@ void merge_lo(std::vector<int>& arr, size_t start1, size_t len1, size_t start2, 
 
 
 
+void merge_hi(std::vector<int>& arr, int start1, int  len1, int start2, int len2) {
+    // Check for out-of-bounds access
+    if (start1 + len1 > arr.size() || start2 + len2 > arr.size()) {
+        throw std::out_of_range("merge_hi: Index out of bounds");
+    }
 
-
-
-void merge_hi(std::vector<int>& arr, size_t start1, size_t len1, size_t start2, size_t len2) {
     // Handle the case where the first subarray is empty
     if (len1 == 0) return;
 
     // Handle the case where the second subarray is empty
     if (len2 == 0) return;
 
-
+    // Temporary array to hold the second subarray
     std::vector<int> temp(arr.begin() + start2, arr.begin() + start2 + len2);
-    size_t i = start1 + len1 - 1; // Index for arr[start1 + len1 - 1]
-    size_t j = len2 - 1; // Index for temp
-    size_t k = start2 + len2 - 1; // Index for merged array position
 
 
-    while (j < len2 && i >= start1) {
+    int i = start1 + len1 - 1; // Index for the end of the first subarray
+    int j = len2 - 1;          // Index for the end of the temporary array
+    int dest = start2 + len2 - 1; // Index for the end of the merged array
 
+    // Merge the two subarrays in reverse order
+    while (i >= start1 && j >=0) {
         if (arr[i] > temp[j]) {
-            arr[k--] = arr[i--];
+            arr[dest--] = arr[i--];
         } else {
-            arr[k--] = temp[j--];
+            arr[dest--] = temp[j--];
         }
     }
 
-    // Copy the remaining elements from temp, if any
-    while (j < len2) {
-
-        arr[k--] = temp[j--];
+    // Copy the remaining elements from the temporary array, if any
+    while (j>=0) {
+        arr[dest--] = temp[j--];
     }
-
-    // Copy the remaining elements from arr[start1...start1+len1-1], if any
     while (i >= start1) {
-
-        arr[k--] = arr[i--];
+        arr[dest--] = arr[i--];
     }
-
 }
-
 
 
 void merge_collapse(std::vector<int>& arr, run_stack& stack) {
@@ -242,18 +239,12 @@ void merge_collapse(std::vector<int>& arr, run_stack& stack) {
                 break;
             }
         } else {
-            stack.push(middle);
-            stack.push(top);
 
-            if (middle.second <= top.second) {
-                // Remove both stacks and merge
-                stack.pop();
-                stack.pop();
-                auto new_run = merge_at(arr, middle, top);
-                stack.push(new_run);
-            } else {
-                break;
-            }
+            // Remove both stacks and merge
+            auto new_run = merge_at(arr, middle, top);
+            stack.push(new_run);
+
+
         }
     }
 }
@@ -317,7 +308,7 @@ std::vector<int> generate_random_data(size_t size) {
     std::vector<int> data(size);
     std::random_device rd;
     std::mt19937 gen(rd());
-    std::uniform_int_distribution<> dis(1, 300);
+    std::uniform_int_distribution<> dis(1, 1000);
 
     for (size_t i = 0; i < size; ++i) {
         data[i] = dis(gen);

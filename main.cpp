@@ -7,7 +7,7 @@ int main() {
         std::cout << "Timsort application running" << std::endl;
 
         // Generate a random array of size 1111
-        std::vector<int> arr = generate_random_data(1111);
+        std::vector<int> arr = generate_random_data(67);
 
         // Apply Timsort
         timsort(arr);
