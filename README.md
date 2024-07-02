@@ -19,3 +19,5 @@ TimSort is one of the highest-efficiency sorting algorithms, implemented in popu
 - To create educational documentation and code comments that explain the inner workings of the algorithm.
 - To follow modern C++ best practices to ensure code clarity, maintainability, and efficiency.
 - To fill the gap in available resources and tutorials by providing an in-depth guide and implementation of TimSort.
+
+Still Under Development
