@@ -20,7 +20,7 @@ void reverse_range(std::vector<int>& arr, size_t start, size_t end);
 size_t count_run(std::vector<int>& arr, size_t minrun, size_t &run_start, run_stack& stack) ;
 size_t compute_minrun(size_t n);
 int binarySearch(std::vector<int>& arr, int x, int low, int high);
-void binary_insertion_sort(std::vector<int>& arr, int key, int location);
+void binary_insertion_sort(std::vector<int>& arr, size_t left, size_t right) ;
 std::pair<size_t, size_t> merge_at(std::vector<int>&array, std::pair<size_t, size_t> run1, std::pair<size_t, size_t> run2);
 void merge_lo(std::vector<int>& arr, int start1, int  len1, int  start2, int  len2);
 void merge_hi(std::vector<int>& arr, int start1, int len1, int  start2, int len2);

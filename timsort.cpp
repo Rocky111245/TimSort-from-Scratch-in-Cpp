@@ -12,62 +12,34 @@ void reverse_range(std::vector<int>& arr, size_t start, size_t end) {
 
 
 
-//Function to count the length of the next run in the array and save run information
+
+// Improved count_run function
 size_t count_run(std::vector<int>& arr, size_t minrun, size_t &run_start, run_stack& stack) {
     size_t array_size = arr.size();
 
     if (run_start >= array_size - 1) return array_size - run_start; // If at the end, return the remaining length
 
     size_t run_end = run_start + 1;
+    bool descending = false;
 
-    // Check if the run is ascending
-    if (arr[run_end] >= arr[run_start]) {
-        while (run_end < array_size && arr[run_end] >= arr[run_end - 1]) {
-            ++run_end;
-        }
-
-        // Extend the run to the minrun length if it's too short
-        if (run_end - run_start < minrun) {
-            std::vector<int> temp_array(arr.begin() + run_start, arr.begin() + run_end);
-
-            while (temp_array.size() < minrun && run_end < array_size) {
-                int location = binarySearch(temp_array, arr[run_end], 0, temp_array.size() - 1);
-                temp_array.insert(temp_array.begin() + location, arr[run_end]);
-                ++run_end;
-            }
-
-            while (run_end < array_size && arr[run_end] >= arr[run_end - 1]) {
-                temp_array.push_back(arr[run_end]);
-                ++run_end;
-            }
-
-            std::copy(temp_array.begin(), temp_array.end(), arr.begin() + run_start);
-        }
-    } else { // The run is descending
+    // Determine if the run is ascending or descending
+    if (arr[run_end] < arr[run_start]) {
+        descending = true;
         while (run_end < array_size && arr[run_end] < arr[run_end - 1]) {
             ++run_end;
         }
-
         // Reverse the descending run to make it ascending
         reverse_range(arr, run_start, run_end - 1);
-
-        // Extend the run to the minrun length if it's too short
-        if (run_end - run_start < minrun) {
-            std::vector<int> temp_array(arr.begin() + run_start, arr.begin() + run_end);
-
-            while (temp_array.size() < minrun && run_end < array_size) {
-                int location = binarySearch(temp_array, arr[run_end], 0, temp_array.size() - 1);
-                temp_array.insert(temp_array.begin() + location, arr[run_end]);
-                ++run_end;
-            }
-
-            while (run_end < array_size && arr[run_end] >= arr[run_end - 1]) {
-                temp_array.push_back(arr[run_end]);
-                ++run_end;
-            }
-
-            std::copy(temp_array.begin(), temp_array.end(), arr.begin() + run_start);
+    } else {
+        while (run_end < array_size && arr[run_end] >= arr[run_end - 1]) {
+            ++run_end;
         }
+    }
+
+    // Extend the run to minrun length if it's too short
+    if (run_end - run_start < minrun) {
+        run_end = std::min(array_size, run_start + minrun);
+        binary_insertion_sort(arr, run_start, run_end - 1);
     }
 
     size_t length = run_end - run_start;
@@ -121,21 +93,13 @@ std::pair<size_t, size_t> merge_at(std::vector<int>&array, std::pair<size_t, siz
 
 
 void merge_lo(std::vector<int>& arr, int start1, int len1, int start2, int len2) {
-    // Check for out-of-bounds access
     if (start1 + len1 > arr.size() || start2 + len2 > arr.size()) {
         throw std::out_of_range("merge_lo: Index out of bounds");
     }
-
-    // Handle the case where the first subarray is empty
-    if (len1 == 0) return;
-
-    // Handle the case where the second subarray is empty
-    if (len2 == 0) return;
+    if (len1 == 0 || len2 == 0) return;
 
     std::vector<int> temp(arr.begin() + start1, arr.begin() + start1 + len1);
-    int i = 0; // Index for temp
-    int j = start2; // Index for arr[start2]
-    int k = start1; // Index for merged array position
+    int i = 0, j = start2, k = start1;
 
     while (i < len1 && j < start2 + len2) {
         if (temp[i] <= arr[j]) {
@@ -144,56 +108,26 @@ void merge_lo(std::vector<int>& arr, int start1, int len1, int start2, int len2)
             arr[k++] = arr[j++];
         }
     }
-
-    // Copy the remaining elements from temp, if any
-    while (i < len1) {
-        arr[k++] = temp[i++];
-    }
-
-    // Copy the remaining elements from arr[start2...start2+len2-1], if any
-    while (j < start2 + len2) {
-        arr[k++] = arr[j++];
-    }
+    std::copy(temp.begin() + i, temp.end(), arr.begin() + k);
 }
 
-
-
-void merge_hi(std::vector<int>& arr, int start1, int  len1, int start2, int len2) {
-    // Check for out-of-bounds access
+void merge_hi(std::vector<int>& arr, int start1, int len1, int start2, int len2) {
     if (start1 + len1 > arr.size() || start2 + len2 > arr.size()) {
         throw std::out_of_range("merge_hi: Index out of bounds");
     }
+    if (len1 == 0 || len2 == 0) return;
 
-    // Handle the case where the first subarray is empty
-    if (len1 == 0) return;
-
-    // Handle the case where the second subarray is empty
-    if (len2 == 0) return;
-
-    // Temporary array to hold the second subarray
     std::vector<int> temp(arr.begin() + start2, arr.begin() + start2 + len2);
+    int i = len1 - 1, j = len2 - 1, k = start2 + len2 - 1;
 
-
-    int i = start1 + len1 - 1; // Index for the end of the first subarray
-    int j = len2 - 1;          // Index for the end of the temporary array
-    int dest = start2 + len2 - 1; // Index for the end of the merged array
-
-    // Merge the two subarrays in reverse order
-    while (i >= start1 && j >=0) {
-        if (arr[i] > temp[j]) {
-            arr[dest--] = arr[i--];
+    while (i >= 0 && j >= 0) {
+        if (arr[start1 + i] > temp[j]) {
+            arr[k--] = arr[start1 + i--];
         } else {
-            arr[dest--] = temp[j--];
+            arr[k--] = temp[j--];
         }
     }
-
-    // Copy the remaining elements from the temporary array, if any
-    while (j>=0) {
-        arr[dest--] = temp[j--];
-    }
-    while (i >= start1) {
-        arr[dest--] = arr[i--];
-    }
+    std::copy_backward(temp.begin(), temp.begin() + j + 1, arr.begin() + k + 1);
 }
 
 
@@ -273,17 +207,23 @@ int binarySearch(std::vector<int>& arr,int x,int low, int high) {
     return low;
 }
 
-// Function to perform binary insertion sort
-void binary_insertion_sort(std::vector<int>& arr, int key,int location) {
-    int size=arr.size();
-    arr.resize(size+1);
+// Binary insertion sort function
+void binary_insertion_sort(std::vector<int>& arr, size_t left, size_t right) {
+    for (size_t i = left + 1; i <= right; ++i) {
+        int key = arr[i];
+        size_t j = i - 1;
+        size_t loc = binarySearch(arr, key, left, j);
 
-    for(int i=size;i>location;i--){
-        arr[i]=arr[i-1];
+        while (j >= loc) {
+            arr[j + 1] = arr[j];
+            if (j == left) break;
+            --j;
+        }
+        arr[loc] = key;
     }
-    arr[location]=key;
-
 }
+
+
 
 
 
@@ -308,7 +248,7 @@ std::vector<int> generate_random_data(size_t size) {
     std::vector<int> data(size);
     std::random_device rd;
     std::mt19937 gen(rd());
-    std::uniform_int_distribution<> dis(1, 1000);
+    std::uniform_int_distribution<> dis(1, 100000);
 
     for (size_t i = 0; i < size; ++i) {
         data[i] = dis(gen);
