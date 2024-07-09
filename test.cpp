@@ -320,4 +320,183 @@ TEST_F(TimsortTest, StressTest) {
     }
 }
 
+// Test the merge_collapse function
+TEST_F(TimsortTest, MergeCollapse) {
+    std::vector<int> arr = {5, 4, 3, 2, 1};
+    size_t minrun = compute_minrun(arr.size());
+    run_stack stack;
+    size_t run_start = 0;
 
+    // Identify and push runs onto the stack
+    while (run_start < arr.size()) {
+        size_t run_length = count_run(arr, minrun, run_start, stack);
+        run_start += run_length;
+    }
+
+    // Merge runs on the stack
+    merge_collapse(arr, stack);
+
+    // Ensure the array is sorted
+    EXPECT_TRUE(std::is_sorted(arr.begin(), arr.end()));
+}
+
+
+class MergeCollapseTest : public ::testing::Test {
+protected:
+    std::vector<int> arr;
+    run_stack stack;
+
+    void SetUp() override {
+        arr = {1, 3, 5, 7, 2, 4, 6, 8};
+    }
+};
+
+// Test merging two runs
+TEST_F(MergeCollapseTest, MergeTwoRuns) {
+    stack.push({0, 4}); // First run: 1, 3, 5, 7
+    stack.push({4, 4}); // Second run: 2, 4, 6, 8
+
+    merge_collapse(arr, stack);
+
+    ASSERT_EQ(1, stack.size());
+    auto merged_run = stack.top();
+    EXPECT_EQ(0, merged_run.first);
+    EXPECT_EQ(8, merged_run.second);
+    EXPECT_EQ((std::vector<int>{1, 2, 3, 4, 5, 6, 7, 8}), arr);
+}
+
+// Test when no merging is needed
+TEST_F(MergeCollapseTest, NoMergeNeeded) {
+    stack.push({0, 5}); // First run: 1, 3, 5, 7, 2
+    stack.push({5, 3}); // Second run: 4, 6, 8
+
+    merge_collapse(arr, stack);
+
+    ASSERT_EQ(2, stack.size());
+    auto top = stack.top();
+    stack.pop();
+    auto bottom = stack.top();
+    EXPECT_EQ(5, top.first);
+    EXPECT_EQ(3, top.second);
+    EXPECT_EQ(0, bottom.first);
+    EXPECT_EQ(5, bottom.second);
+}
+
+// Test merging three runs
+TEST_F(MergeCollapseTest, MergeThreeRuns) {
+    arr = {1, 3, 5, 2, 4, 6, 7, 8, 9};
+    stack.push({0, 3}); // A: 1, 3, 5
+    stack.push({3, 3}); // B: 2, 4, 6
+    stack.push({6, 3}); // C: 7, 8, 9
+
+    merge_collapse(arr, stack);
+
+    ASSERT_EQ(1, stack.size());
+    auto merged_run = stack.top();
+    EXPECT_EQ(0, merged_run.first);
+    EXPECT_EQ(9, merged_run.second);
+    EXPECT_EQ((std::vector<int>{1, 2, 3, 4, 5, 6, 7, 8, 9}), arr);
+}
+
+// Test merging with empty stack
+TEST_F(MergeCollapseTest, EmptyStack) {
+    merge_collapse(arr, stack);
+
+    EXPECT_TRUE(stack.empty());
+    EXPECT_EQ((std::vector<int>{1, 3, 5, 7, 2, 4, 6, 8}), arr);
+}
+
+// Test merging with single run in stack
+TEST_F(MergeCollapseTest, SingleRunInStack) {
+    stack.push({0, 8});
+
+    merge_collapse(arr, stack);
+
+    ASSERT_EQ(1, stack.size());
+    auto run = stack.top();
+    EXPECT_EQ(0, run.first);
+    EXPECT_EQ(8, run.second);
+    EXPECT_EQ((std::vector<int>{1, 3, 5, 7, 2, 4, 6, 8}), arr);
+}
+
+// Test merging with uneven run sizes
+TEST_F(MergeCollapseTest, UnevenRunSizes) {
+    arr = {1, 3, 5, 7, 9, 2, 4, 6, 8};
+    stack.push({0, 5}); // A: 1, 3, 5, 7, 9
+    stack.push({5, 4}); // B: 2, 4, 6, 8
+
+    merge_collapse(arr, stack);
+
+    ASSERT_EQ(1, stack.size());
+    auto merged_run = stack.top();
+    EXPECT_EQ(0, merged_run.first);
+    EXPECT_EQ(9, merged_run.second);
+    EXPECT_EQ((std::vector<int>{1, 2, 3, 4, 5, 6, 7, 8, 9}), arr);
+}
+
+// Test merging with exactly three runs
+TEST_F(MergeCollapseTest, ExactlyThreeRuns) {
+    arr = {1, 2, 3, 4, 5, 6, 7, 8, 9};
+    stack.push({0, 3}); // A: 1, 2, 3
+    stack.push({3, 3}); // B: 4, 5, 6
+    stack.push({6, 3}); // C: 7, 8, 9
+
+    merge_collapse(arr, stack);
+
+    ASSERT_EQ(1, stack.size());
+    EXPECT_EQ(0, stack.top().first);
+    EXPECT_EQ(9, stack.top().second);
+    EXPECT_EQ((std::vector<int>{1, 2, 3, 4, 5, 6, 7, 8, 9}), arr);
+}
+
+// Test merging with runs violating both invariants
+TEST_F(MergeCollapseTest, ViolateBothInvariants) {
+    arr = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11};
+    stack.push({0, 2}); // A: 1, 2
+    stack.push({2, 3}); // B: 3, 4, 5
+    stack.push({5, 6}); // C: 6, 7, 8, 9, 10, 11
+
+    merge_collapse(arr, stack);
+
+    ASSERT_EQ(2, stack.size());
+    EXPECT_EQ(0, stack.top().first);
+    EXPECT_EQ(5, stack.top().second);
+    stack.pop();
+    EXPECT_EQ(5, stack.top().first);
+    EXPECT_EQ(6, stack.top().second);
+    EXPECT_EQ((std::vector<int>{1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11}), arr);
+}
+
+// Test merging with only two runs
+TEST_F(MergeCollapseTest, OnlyTwoRuns) {
+    arr = {1, 3, 5, 7, 2, 4, 6, 8};
+    stack.push({0, 4}); // A: 1, 3, 5, 7
+    stack.push({4, 4}); // B: 2, 4, 6, 8
+
+    merge_collapse(arr, stack);
+
+    ASSERT_EQ(1, stack.size());
+    EXPECT_EQ(0, stack.top().first);
+    EXPECT_EQ(8, stack.top().second);
+    EXPECT_EQ((std::vector<int>{1, 2, 3, 4, 5, 6, 7, 8}), arr);
+}
+
+// Test with a large number of small runs
+TEST_F(MergeCollapseTest, ManySmallRuns) {
+    arr.clear();
+    for (int i = 0; i < 100; ++i) {
+        arr.push_back(i);
+        stack.push({static_cast<size_t>(i), 1});
+    }
+
+    merge_collapse(arr, stack);
+
+    ASSERT_LE(stack.size(), 2);  // Should have merged most runs
+    size_t total_length = 0;
+    while (!stack.empty()) {
+        total_length += stack.top().second;
+        stack.pop();
+    }
+    EXPECT_EQ(100, total_length);
+    EXPECT_TRUE(std::is_sorted(arr.begin(), arr.end()));
+}

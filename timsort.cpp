@@ -132,12 +132,6 @@ void merge_hi(std::vector<int>& arr, int start1, int len1, int start2, int len2)
 
 
 void merge_collapse(std::vector<int>& arr, run_stack& stack) {
-    // Ensure the stack has at least 2 runs to merge
-
-    // top -> C
-    // middle -> B
-    // bottom -> A
-
     while (stack.size() > 1) {
         auto top = stack.top(); // C
         stack.pop();
@@ -147,41 +141,36 @@ void merge_collapse(std::vector<int>& arr, run_stack& stack) {
         // If the stack still has more elements, we need to check the third most recent run
         if (!stack.empty()) {
             auto bottom = stack.top(); // A
-            stack.push(middle);
-            stack.push(top);
+            stack.pop();
 
-            // Check if the third run's length is less than or equal to the sum of the two most recent runs
-            if (bottom.second <= middle.second + top.second) {
-                // Check if the run length combination violates the second invariant
-                if (top.second + middle.second <= bottom.second) {
-                    stack.pop();
-                    stack.pop();
+            // Check the invariants
+            if (bottom.second <= middle.second + top.second || middle.second <= top.second) {
+                // If both invariants are violated, merge the middle and top
+                if (middle.second <= top.second) {
+                    stack.push(bottom);
                     auto new_run = merge_at(arr, middle, top); // Merge middle (B) and top (C)
                     stack.push(new_run);
                 } else {
-                    stack.pop();
-                    stack.pop();
-                    stack.pop();
                     auto new_run = merge_at(arr, bottom, middle); // Merge bottom (A) and middle (B)
                     stack.push(new_run);
                     stack.push(top); // Push top (C) back on the stack
                 }
             } else {
-                // No merging needed; restore the stack
+                // Restore the stack if no merging needed
+                stack.push(bottom);
                 stack.push(middle);
                 stack.push(top);
                 break;
             }
         } else {
-
-            // Remove both stacks and merge
+            // Only two runs left to merge
             auto new_run = merge_at(arr, middle, top);
             stack.push(new_run);
-
-
         }
     }
 }
+
+
 
 
 
@@ -257,14 +246,27 @@ std::vector<int> generate_random_data(size_t size) {
 }
 
 // Function to benchmark a sorting function
-void benchmark_sort(std::function<void(std::vector<int>&)> sort_function, const std::vector<int>& data, const std::string& name) {
-    std::vector<int> copy = data;
+double benchmark_sort(std::function<void(std::vector<int>&)> sort_function, const std::vector<int>& data, const std::string& name, int runs) {
+    double total_duration = 0.0;
 
-    auto start = std::chrono::high_resolution_clock::now();
-    sort_function(copy);
-    auto end = std::chrono::high_resolution_clock::now();
+    for (int i = 0; i < runs; ++i) {
+        std::vector<int> copy = data;
 
-    std::chrono::duration<double> duration = end - start;
-    std::cout << name << " took " << duration.count() << " seconds." << std::endl;
+        auto start = std::chrono::high_resolution_clock::now();
+        sort_function(copy);
+        auto end = std::chrono::high_resolution_clock::now();
+
+        std::chrono::duration<double> duration = end - start;
+        total_duration += duration.count();
+
+        // Verify if the array is sorted
+        if (!std::is_sorted(copy.begin(), copy.end())) {
+            std::cerr << name << " failed to sort the array." << std::endl;
+        }
+    }
+
+    double average_duration = total_duration / runs;
+    std::cout << name << " took " << average_duration << " seconds on average over " << runs << " runs." << std::endl;
+
+    return average_duration;
 }
-
