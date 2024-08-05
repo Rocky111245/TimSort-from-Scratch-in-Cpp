@@ -15,7 +15,7 @@
 
 const int MIN_GALLOP = 7;
 typedef std::stack<std::pair<size_t, size_t>> run_stack;
-
+size_t gallop(const std::vector<int>& arr, int key, size_t current, size_t end_index);
 void reverse_range(std::vector<int>& arr, size_t start, size_t end);
 size_t count_run(std::vector<int>& arr, size_t minrun, size_t &run_start, run_stack& stack) ;
 std::vector<int> generate_random_data(size_t size);

@@ -90,6 +90,43 @@ std::pair<size_t, size_t> merge_at(std::vector<int>&array, std::pair<size_t, siz
 
 
 
+// Gallop function definition
+size_t gallop(const std::vector<int>& arr, int key, size_t current, size_t end_index) {
+    size_t step = 1;
+    size_t last = current;
+    size_t pos = current;
+
+    // Galloping phase
+    while (pos < end_index && arr[pos] < key) {
+        last = pos;
+        step *= 2;
+        if (current + step > end_index) {
+            pos = end_index; // Limit pos to end_index
+        } else {
+            pos = current + step;
+        }
+    }
+
+    // Adjust pos if it went out of bounds or if it stopped at the end_index
+    if (pos >= end_index) {
+        pos = end_index;
+    }
+
+    // Perform a binary search within the range [last, pos] to find the exact position
+    size_t low = last;
+    size_t high = pos;
+    while (low < high) {
+        size_t mid = low + (high - low) / 2;
+        if (arr[mid] < key) {
+            low = mid + 1;
+        } else {
+            high = mid;
+        }
+    }
+
+    return low;
+}
+
 
 
 void merge_lo(std::vector<int>& arr, int start1, int len1, int start2, int len2) {
@@ -98,16 +135,47 @@ void merge_lo(std::vector<int>& arr, int start1, int len1, int start2, int len2)
     }
     if (len1 == 0 || len2 == 0) return;
 
+    // Copy the first run to a temporary array
     std::vector<int> temp(arr.begin() + start1, arr.begin() + start1 + len1);
     int i = 0, j = start2, k = start1;
+    int count1 = 0;
+    int count2 = 0;
 
+    // Merge the runs while there are elements in both
     while (i < len1 && j < start2 + len2) {
         if (temp[i] <= arr[j]) {
             arr[k++] = temp[i++];
+            count1++;
+            count2 = 0;
         } else {
             arr[k++] = arr[j++];
+            count2++;
+            count1 = 0;
+        }
+
+        // If one array wins enough times, switch to galloping mode
+        if (count1 >= MIN_GALLOP || count2 >= MIN_GALLOP) {
+            if (count1 >= MIN_GALLOP) {
+                // 'Help' the temp array by galloping in the main array
+                size_t new_i = gallop(temp, arr[j], i, len1);
+                size_t count = new_i - i;
+                std::copy(temp.begin() + i, temp.begin() + new_i, arr.begin() + k);
+                k += count;
+                i = new_i;
+                count1 = 0; // Reset count
+            } else if (count2 >= MIN_GALLOP) {
+                // 'Help' the main array by galloping in the temp array
+                size_t new_j = gallop(arr, temp[i], j, start2 + len2);
+                size_t count = new_j - j;
+                std::copy(arr.begin() + j, arr.begin() + new_j, arr.begin() + k);
+                k += count;
+                j = new_j;
+                count2 = 0; // Reset count
+            }
         }
     }
+
+    // Copy any remaining elements from temp to arr
     std::copy(temp.begin() + i, temp.end(), arr.begin() + k);
 }
 
@@ -119,16 +187,42 @@ void merge_hi(std::vector<int>& arr, int start1, int len1, int start2, int len2)
 
     std::vector<int> temp(arr.begin() + start2, arr.begin() + start2 + len2);
     int i = len1 - 1, j = len2 - 1, k = start2 + len2 - 1;
+    int count1 = 0;
+    int count2 = 0;
 
     while (i >= 0 && j >= 0) {
         if (arr[start1 + i] > temp[j]) {
             arr[k--] = arr[start1 + i--];
+            count1++;
+            count2 = 0;
         } else {
             arr[k--] = temp[j--];
+            count2++;
+            count1 = 0;
+        }
+
+        if (count1 >= MIN_GALLOP || count2 >= MIN_GALLOP) {
+            if (count1 >= MIN_GALLOP) {
+                size_t new_i = gallop(temp, arr[start1 + i], j + 1, len2);
+                size_t count = new_i - j - 1;
+                std::copy_backward(temp.begin() + new_i - count, temp.begin() + new_i, arr.begin() + k + 1);
+                k -= count;
+                j = new_i - count - 1;
+                count1 = 0;
+            } else if (count2 >= MIN_GALLOP) {
+                size_t new_j = gallop(arr, temp[j], i + 1, len1);
+                size_t count = new_j - i - 1;
+                std::copy_backward(arr.begin() + start1 + new_j - count, arr.begin() + start1 + new_j, arr.begin() + k + 1);
+                k -= count;
+                i = new_j - count - 1;
+                count2 = 0;
+            }
         }
     }
+
     std::copy_backward(temp.begin(), temp.begin() + j + 1, arr.begin() + k + 1);
 }
+
 
 
 void merge_collapse(std::vector<int>& arr, run_stack& stack) {
