@@ -29,6 +29,8 @@ void merge_hi(std::vector<int>& arr, int start1, int len1, int  start2, int len2
 std::pair<size_t, size_t> merge_at(std::vector<int>& array, std::pair<size_t, size_t> run1, std::pair<size_t, size_t> run2);
 void merge_collapse(std::vector<int>& arr, run_stack& stack);
 void timsort(std::vector<int>& arr);
+void print_array(const std::vector<int>& arr, size_t max_elements = 20);
+void run_sort(size_t size);
 
 
 

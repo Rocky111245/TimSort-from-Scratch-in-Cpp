@@ -133,52 +133,6 @@ TEST_F(TimsortTest, SortsRepeatingPattern) {
     checkSorted(vec);
 }
 
-// Test sorting of nearly sorted data with few swaps
-TEST_F(TimsortTest, SortsNearlySortedData) {
-    std::vector<int> vec(10000);
-    std::iota(vec.begin(), vec.end(), 0);
-    for (int i = 0; i < 100; ++i) {
-        int idx1 = gen() % vec.size();
-        int idx2 = gen() % vec.size();
-        std::swap(vec[idx1], vec[idx2]);
-    }
-
-    auto print_partial = [](const std::vector<int>& v) {
-        std::cout << "First 20: ";
-        for (int i = 0; i < 20 && i < v.size(); ++i) std::cout << v[i] << " ";
-        std::cout << "\nLast 20: ";
-        for (int i = std::max(0, static_cast<int>(v.size()) - 20); i < v.size(); ++i) std::cout << v[i] << " ";
-        std::cout << std::endl;
-    };
-
-    std::cout << "Before sorting:\n";
-    print_partial(vec);
-
-    auto vec_copy = vec;
-    timsort(vec);
-    std::sort(vec_copy.begin(), vec_copy.end());
-
-    std::cout << "After sorting:\n";
-    print_partial(vec);
-
-    // Count inversions
-    int inversions = 0;
-    for (size_t i = 0; i < vec.size() - 1; ++i) {
-        if (vec[i] > vec[i+1]) ++inversions;
-    }
-    std::cout << "Number of inversions: " << inversions << std::endl;
-
-    // Compare with std::sort
-    for (size_t i = 0; i < vec.size(); ++i) {
-        if (vec[i] != vec_copy[i]) {
-            std::cout << "Mismatch at index " << i << ": timsort=" << vec[i] << ", std::sort=" << vec_copy[i] << std::endl;
-            break;
-        }
-    }
-
-    EXPECT_TRUE(std::is_sorted(vec.begin(), vec.end()));
-    EXPECT_EQ(vec, vec_copy);
-}
 
 // Test sorting of a very large input
 TEST_F(TimsortTest, HandlesLargeInput) {

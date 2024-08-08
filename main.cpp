@@ -10,20 +10,11 @@
 
 
 int main() {
-    size_t size =211111; // Size of the random dataset
-    std::vector<int> data = generate_random_data(size);
-    if(std::is_sorted(data.begin(),data.end())){
-        std::cout<<"True at start"<<std::endl;
-    }
-    else{
-        std::cout<<"False at start"<<std::endl;
-    }
-    timsort(data);
-    if(std::is_sorted(data.begin(),data.end())){
-        std::cout<<"True after sort"<<std::endl;
-    }
-    else{
-        std::cout<<"False after sort"<<std::endl;
-    }
+    run_sort(20);
+    run_sort(65);
+    run_sort(1000);
+    run_sort(10000);  // Add more sizes as needed
+    run_sort(211111); // Original large size
+
     return 0;
 }

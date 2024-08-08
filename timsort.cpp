@@ -364,3 +364,58 @@ double benchmark_sort(std::function<void(std::vector<int>&)> sort_function, cons
 
     return average_duration;
 }
+
+
+
+// Function to print a portion of the array
+void print_array(const std::vector<int>& arr, size_t max_elements ) {
+    size_t n = arr.size();
+    if (n <= max_elements) {
+        for (size_t i = 0; i < n; ++i) {
+            std::cout << arr[i] << " ";
+        }
+    } else {
+        // Print first few elements
+        for (size_t i = 0; i < max_elements / 2; ++i) {
+            std::cout << arr[i] << " ";
+        }
+        std::cout << "... ";
+        // Print last few elements
+        for (size_t i = n - max_elements / 2; i < n; ++i) {
+            std::cout << arr[i] << " ";
+        }
+    }
+    std::cout << std::endl;
+}
+
+void run_sort(size_t size) {
+    std::vector<int> data = generate_random_data(size);
+
+    std::cout << "Array Size: " << size << std::endl;
+    std::cout << "Initial Data:" << std::endl;
+    if (size <= 1000) {
+        print_array(data, 65);
+    } else {
+        std::cout << "Array too large to display. Displaying initial and final 10 elements:" << std::endl;
+        print_array(data, 20);
+    }
+
+    std::cout << "Is the initial data sorted? " << (std::is_sorted(data.begin(), data.end()) ? "Yes" : "No") << std::endl;
+
+    auto start = std::chrono::high_resolution_clock::now();
+    timsort(data);
+    auto end = std::chrono::high_resolution_clock::now();
+    std::chrono::duration<double> duration = end - start;
+
+    std::cout << "Data After Sorting:" << std::endl;
+    if (size <= 1000) {
+        print_array(data, 65);
+    } else {
+        std::cout << "Array too large to display. Displaying initial and final 10 elements:" << std::endl;
+        print_array(data, 20);
+    }
+
+    std::cout << "Is the data sorted after TimSort? " << (std::is_sorted(data.begin(), data.end()) ? "Yes" : "No") << std::endl;
+    std::cout << "Time taken to sort: " << duration.count() << " seconds" << std::endl;
+    std::cout << "-----------------------------------------------------" << std::endl;
+}
