@@ -16,10 +16,17 @@
 
 ## Complexity Rating
 
-**Complexity**: ![8/10](https://img.shields.io/badge/difficulty-8%2F10-orange)
+![Difficulty](https://img.shields.io/badge/difficulty-8%2F10-orange)
 
-*This rating reflects the complexity of understanding and implementing the TimSort algorithm, as well as the advanced C++ programming techniques used in this project. Besides the author's own rating, this algorithm has been independently rated by GPT-4 and Claude Sonnet 3.5 with a difficulty rating of 8/10.*
+This rating reflects the complexity of understanding and implementing the TimSort algorithm. Key factors contributing to the complexity include:
 
+- Intricate algorithm logic requiring deep understanding of sorting techniques
+- Careful management of indices, crucial to TimSort's efficiency
+- Implementation of advanced features like galloping mode and run merging
+
+While the C++ coding techniques used range from basic to moderate, the overall complexity is elevated due to the algorithm's inherent intricacy and lack of guidance in its implementation, except directly from the source material. This challenge of working primarily from original documentation adds to the project's difficulty.
+
+This implementation has been independently rated by GPT-4 and Claude 3.5 Sonnet, corroborating the author's assessment of 8/10 difficulty.
 # TimSort Implementation in C++
 
 ## Introduction
