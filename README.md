@@ -88,24 +88,29 @@ Note: This project requires CMake 3.26 or higher and uses C++23 standard. It's c
 
 To run the TimSort implementation using Docker, follow these steps:
 
-1. Build the Docker image:
+1. Clone the repository:
+    ```bash
+   git clone https://github.com/Rocky111245/TimSort-from-Scratch-in-Cpp.git
+   cd TimSort-from-Scratch-in-Cpp
+    ```
+3. Build the Docker image:
    ```bash
    docker build -t cpp-timsort .
    ```
 
-2. To run the main program, which demonstrates TimSort on various array sizes:
+4. To run the main program, which demonstrates TimSort on various array sizes:
    ```bash
    docker run -it --rm cpp-timsort
    ```
 
    Note: This uses the default CMD specified in the Dockerfile.
 
-3. To execute the test suite:
+5. To execute the test suite:
    ```bash
    docker run -it --rm cpp-timsort ./build/TestRunner
    ```
 
-4. If you need to run the main program explicitly:
+6. If you need to run the main program explicitly:
    ```bash
    docker run -it --rm cpp-timsort ./build/TimSortMain
    ```
